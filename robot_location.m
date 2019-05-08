@@ -1,15 +1,15 @@
 x = inputdlg('Enter step time to visualize',... %Introducing the snapshot to visualize
 			'Input', [1 20]);
 
-index = str2num(x{:})
+index = str2double(x{:})
 Robot = [0 -0.2 0 1;0.4 0 0 1;0 0.2 0 1]'; % The Robot icon is a triangle
 
 for index=1:522 % Use the for loop to see a movie
 	t = 0: 2*pi/359 : 2*pi;
-	P = polar(t, 4.5 * ones(size(t)));% to fix the limits
+	P = polarplot(t, 4.5 * ones(size(t)));% to fix the limits
 
 	set(P, 'Visible', 'off')
-	polar(t, lds_dis (index,2:361), '--g'); % Ploting the laser data wrt Robot frame
+	polarplot(t, lds_dis (index,2:361), '--g'); % Ploting the laser data wrt Robot frame
 	title ('Laser data at Robot Reference Frame','FontWeight','bold','FontSize',16)
 	subplot(1,2,2)
 	title ('Data on Wordl Reference Frame', 'FontWeight','bold','FontSize',16)
