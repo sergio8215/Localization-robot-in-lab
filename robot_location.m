@@ -6,6 +6,7 @@ Robot = [0 -0.2 0 1;0.4 0 0 1;0 0.2 0 1]'; % The Robot icon is a triangle
 
 for index=1:522 % Use the for loop to see a movie
 	t = 0: 2*pi/359 : 2*pi;
+    subplot(1,2,1)
 	P = polarplot(t, 4.5 * ones(size(t)));% to fix the limits
 
 	set(P, 'Visible', 'off')
