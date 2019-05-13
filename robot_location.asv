@@ -26,12 +26,11 @@ for index=1:522 % Use the for loop to see a movie
     
     count_landm = 0;
     count_zero = 0;
-    acum_x = 0;
-    acum_y = 0;
+    acum = 0;
     landmark_robot = [0,0];
     landm=2;
     
-    while landm < 361
+    while landm < 362
         landm_ini = landm;
         
         if lds_dis(index,landm) ~= 0
@@ -40,19 +39,15 @@ for index=1:522 % Use the for loop to see a movie
                     count_zero = count_zero+1;
                 else
                     count_zero = 0;
-                    acum_x = ldx(index,landm-1) + acum_x;
-                    acum_y = ldx(index,landm-1) + acum_y;
                     count_landm = count_landm +1; % contamos las casillas donde vemos el objeto
                 end
                 landm =landm+1;
             end
                 count_zero = 0;
-                media_x = acum_x/count_landm;
-                media_y = acum_y/count_landm;
+                media_x = mean(ldx(index,landm_ini-1:landm_ini-1+count_landm));
+                media_y = mean(ldy(index,landm_ini-1:landm_ini-1+count_landm));
                 landmark_robot = [landmark_robot ; media_x, media_y];
                 count_landm = 0;
-                acum_x = 0;
-                acum_y = 0;
         else
             landm =landm+1;
         end
