@@ -31,25 +31,31 @@ for index=1:522 % Use the for loop to see a movie
     landmark_robot = [0,0];
     landm=2;
     
-    while landm < 361
+    if index == 201
+        stop = 0;
+    end
+    
+    while landm < 362
         landm_ini = landm;
         
         if lds_dis(index,landm) ~= 0
-            while count_zero < 5 % Si tenemos menos de 5 ceros seguidos estamos viendo un objeto
+            while count_zero < 3 && landm < 362 % Si tenemos menos de 5 ceros seguidos estamos viendo un objeto
                 if lds_dis(index,landm) == 0 % Verficamos que seguimos viendo un objeto
                     count_zero = count_zero+1;
                 else
                     count_zero = 0;
                     acum_x = ldx(index,landm-1) + acum_x;
-                    acum_y = ldx(index,landm-1) + acum_y;
+                    acum_y = ldy(index,landm-1) + acum_y;
                     count_landm = count_landm +1; % contamos las casillas donde vemos el objeto
                 end
                 landm =landm+1;
             end
                 count_zero = 0;
-                media_x = acum_x/count_landm;
-                media_y = acum_y/count_landm;
-                landmark_robot = [landmark_robot ; media_x, media_y];
+                if count_landm > 3 % Si tenemos se a visto el landmark más de 3 veces, podemos decir que no es un error
+                    media_x = acum_x/count_landm;
+                    media_y = acum_y/count_landm;
+                    landmark_robot = [landmark_robot ; media_x, media_y];
+                 end
                 count_landm = 0;
                 acum_x = 0;
                 acum_y = 0;
@@ -58,8 +64,8 @@ for index=1:522 % Use the for loop to see a movie
         end
     end
     
-	for i=1:4 % plotting the 4 Land Marks
-		circle (landmark_robot(i,:)',0.15)
+	for i=2:size(landmark_robot) % plotting the 4 Land Marks
+		circle (landmark_robot(i,:),0.15)
 	end
     
     scatter(ldx(index,:), ldy(index,:)) % plotting the land mark seen by the Robot wrt wordl reference frame
