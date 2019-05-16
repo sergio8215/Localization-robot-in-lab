@@ -66,7 +66,17 @@ for index=1:522 % Use the for loop to see a movie
     
 	for i=2:size(landmark_robot) % plotting the 4 Land Marks
 		circle (landmark_robot(i,:),0.15)
-	end
+    end
+    
+    % calculo de odometria
+    Sc =    (data_enc(index,7)+ data_enc(index,6))/2; % (Right + Left) / 2
+    titac = (data_enc(index,7) - data_enc(index,6))/(width); % (Right - Left) / 2*S
+    xt = Sc*cosd(tita) + xt;
+    yt = Sc*sind(tita) + yt;
+    tita =  titac + tita;
+    trajec_calc(index,:) = [xt, yt, tita];
+    plot (xt, yt, 'b') % Plotting the trajectory
+    % FIN calculo odometria
     
     scatter(ldx(index,:), ldy(index,:)) % plotting the land mark seen by the Robot wrt wordl reference frame
 	plot (trajec(:,1), trajec(:,2), 'r.','LineWidth',1.5) % Plotting the trajectory
