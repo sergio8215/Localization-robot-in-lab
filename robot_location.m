@@ -119,3 +119,29 @@ for t=1:523
     end
 end
 
+%Apartado 5: Similarity	Transform, error calculation
+Error = [];
+for t=1:523
+    LandMark = [];
+    detected = [];
+    for m=1:length(landmarks{t})
+        LandMark = [ LandMark'; landmarks{t}{m}(3:4)]';
+        detected = [detected'; landmarks{t}{m}(1:2)]';
+    end
+
+    %Build Matrix A
+    A = [];
+    for i=1:size( LandMark , 2)
+     A = [A;[ LandMark(1,i), LandMark(2,i),1,0]];
+     A = [A;[ LandMark(2,i),-LandMark(1,i),0,1]];
+    end
+    B = [];%Build Matrix B
+    for i=1:size( detected , 2)
+     B = [B; detected(1,i); detected(2,i)];
+    end
+    %Compute tx ty i tita
+    X = inv((A'*A))*A'*B;
+    Error(t,1) = X(3);
+    Error(t,2)= X(4);
+    Error(t,3) = atan2(X(2),X(1))*180/pi;
+end
