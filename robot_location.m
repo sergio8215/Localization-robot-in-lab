@@ -80,9 +80,7 @@ for index=1:522 % Use the for loop to see a movie
 	pause(0.1);
 	clf
 end
-k=70
-j=3
-i = 4
+
 %Apartado 4: filtering landmarks
 for k=1:length(lds_dis)
     array = lds_dis(k,2:361);
@@ -100,18 +98,24 @@ for k=1:length(lds_dis)
         a = (ini+fin)/2;
         x = r * cosd(a)/1000;
         y =  r * sind(a)/1000;
+        %landmarks{i}{j}(1:2) contiene las coordenadas del landmark
+        %detectadas por el laser
         landmarks{k}{j} = [x y];
         j = j + 1;
         i = i + 1;
     end
 end
 
+%Apartado 4: Finding associated landmark and printing it as seen by
+%the robot
 for t=1:523
     for l=1:length(landmarks{t})
         hold on
         scatter(landmarks{t}{l}(1),landmarks{t}{l}(2))
+        distances = sqrt(sum(bsxfun(@minus, LandMark, landmarks{t}{l}).^2,2));
+        %landmarks{i}{j}(3:4) contiene el landmark asociado a las
+        %coordenadas de landmarks{i}{j}(1:2)
+        landmarks{t}{l}(3:4) = LandMark(find(distances==min(distances),1),:);
     end
 end
-%Apartado 4: Finding associated landmark
-landmarks{70}{2}
 
