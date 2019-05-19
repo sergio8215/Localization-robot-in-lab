@@ -3,6 +3,28 @@ x = inputdlg('Enter step time to visualize',... %Introducing the snapshot to vis
 
 index = str2double(x{:})
 Robot = [0 -0.2 0 1;0.4 0 0 1;0 0.2 0 1]'; % The Robot icon is a triangle
+% tita = 90;
+tita = pi/2;
+xt = 0;
+yt = 0;
+
+
+for index=2:523
+    % calculo de odometria
+    R = data_enc(index, 7) - data_enc(index-1, 7);
+    L = data_enc(index, 6) - data_enc(index-1, 6);
+    Sc = (( R + L)/2)/1000; % (Right + Left) / 2 y lo pasamos a metros
+    titac = ( R - L )/(width); % (Right - Left) / 2*S
+    
+    xt = xt + Sc*cos(tita);
+    yt = yt + Sc*sin(tita);
+    
+    tita =  mod(titac + tita,2*pi); 
+    
+    traject_calc(index-1,:) = [xt, yt, tita];
+    
+    % FIN calculo odometria
+end
 
 for index=1:522 % Use the for loop to see a movie
 	t = 0: 2*pi/359 : 2*pi;
@@ -22,71 +44,37 @@ for index=1:522 % Use the for loop to see a movie
 		circle (LandMark(i,:)',0.15)
 	end
 
-	scatter(ldx(index,:), ldy(index,:)) % plotting the land mark seen by the Robot wrt wordl reference frame
+
+    % Polar2cartesian
     
-    count_landm = 0;
-    count_zero = 0;
-    acum_x = 0;
-    acum_y = 0;
-    landmark_robot = [0,0];
-    landm=2;
-    
-    if index == 201
-        stop = 0;
+    for i=1:360
+        xt(i) = (cosd(i) * lds_dis(index,i+1) )/1000; % y pasamos a metros
+        yt(i) = (sind(i) * lds_dis(index,i+1) )/1000; % y pasamos a metros
+        % robot to world
+        tita_ini = traject_calc(index,3);
+        pos_act_x = traject_calc(index,1);
+        pos_act_y = traject_calc(index,2);
+         tst1 = transl2(pos_act_x ,pos_act_y )*trot2(tita_ini)*[xt(i),yt(i),1]';
+         tst1 = tst1';
+         ldx_calc(index,i) = tst1(1,1);
+         ldy_calc(index,i) = tst1(1,2);
+         %end robot to world plot
     end
+    % FIN Polar2cartesian
     
-    while landm < 362
-        landm_ini = landm;
-        
-        if lds_dis(index,landm) ~= 0
-            while count_zero < 3 && landm < 362 % Si tenemos menos de 5 ceros seguidos estamos viendo un objeto
-                if lds_dis(index,landm) == 0 % Verficamos que seguimos viendo un objeto
-                    count_zero = count_zero+1;
-                else
-                    count_zero = 0;
-                    acum_x = ldx(index,landm-1) + acum_x;
-                    acum_y = ldy(index,landm-1) + acum_y;
-                    count_landm = count_landm +1; % contamos las casillas donde vemos el objeto
-                end
-                landm =landm+1;
-            end
-                count_zero = 0;
-                if count_landm > 3 % Si tenemos se a visto el landmark más de 3 veces, podemos decir que no es un error
-                    media_x = acum_x/count_landm;
-                    media_y = acum_y/count_landm;
-                    landmark_robot = [landmark_robot ; media_x, media_y];
-                 end
-                count_landm = 0;
-                acum_x = 0;
-                acum_y = 0;
-        else
-            landm =landm+1;
-        end
-    end
+    % robot to world plot
+	scatter(ldx_calc(index,:), ldy_calc(index,:), 'r') % plotting the land mark seen by the Robot wrt wordl reference frame calculated by us
+    % end robot to world plot
     
-	for i=2:size(landmark_robot) % plotting the 4 Land Marks
-		circle (landmark_robot(i,:),0.15)
-    end
+    % ploting the calculated trajectory
+    plot (trajec_calc(:,1), trajec_calc(:,2), 'b.','LineWidth',1.5) % Plotting the trajectory
+    % end ploting the calculated trajectory
     
-    % calculo de odometria
-    Sc =    (data_enc(index,7)+ data_enc(index,6))/2; % (Right + Left) / 2
-    titac = (data_enc(index,7) - data_enc(index,6))/(width); % (Right - Left) / 2*S
-    xt = Sc*cosd(tita) + xt;
-    yt = Sc*sind(tita) + yt;
-    tita =  titac + tita;
-    trajec_calc(index,:) = [xt, yt, tita];
-    plot (xt, yt, 'b') % Plotting the trajectory
-    % FIN calculo odometria
-    
-    scatter(ldx(index,:), ldy(index,:)) % plotting the land mark seen by the Robot wrt wordl reference frame
-	plot (trajec(:,1), trajec(:,2), 'r.','LineWidth',1.5) % Plotting the trajectory
+    % scatter(ldx(index,:), ldy(index,:),'b') % plotting the land mark seen by the Robot wrt wordl reference frame
+	% plot (trajec(:,1), trajec(:,2), 'r.','LineWidth',1.5) % Plotting the trajectory
 	Robot_tr = transl(trajec(index,1),trajec(index,2),0)*trotz(mod(trajec(index,3)+pi/2,2*pi))*Robot; % moving the robot
 	patch(Robot_tr(1,:), Robot_tr(2,:),'b');
-    hold on
-    for ellipses=1:10:index
-        plot_ellipse(pk.signals.values(1:2,1:2,ellipses),[trajec(ellipses,1), trajec(ellipses,2)],'g'); % Plotting the covariance matrix
-    end
-	
+    plot_ellipse(pk.signals.values(1:2,1:2,index),[trajec(index,1), trajec(index,2)],'g'); % Plotting the covariance matrix
 	pause(0.1);
 	clf
 end
